@@ -8,8 +8,6 @@
 
 int main(int argc, char *argv[]) 
 {
-	int i;
-	int j;
 	int sock;
 	int new_sock;
 	socklen_t size;
@@ -20,14 +18,14 @@ int main(int argc, char *argv[])
 	struct sockaddr_un client_address;
 
 	size = sizeof(struct sockaddr_un);
-	sock = socket(AF_INET, SOCK_STREAM, 0);
+	sock = socket(AF_LOCAL, SOCK_STREAM, 0);
 	if (sock == -1)
 	{
 		fprintf(stderr, "Incorrect client socket\n");
 		exit(1);
 	}
 
-	if (remove("/tmp/udpser") == -1 && errno != ENOENT)
+	if (remove("/tmp/udpcli") == -1 && errno != ENOENT)
 	{
 		fprintf(stderr, "Incorrect\n");
 		exit(1);
@@ -45,28 +43,15 @@ int main(int argc, char *argv[])
 		exit(1);
 	}
 	
-	if(connect(sock, (struct sockaddr *)& server_address, sizeof(server_address)) == -1)
+	if(connect(sock, (struct sockaddr *)&server_address, sizeof(server_address)) == -1)
 	{
 		fprintf(stderr, "Incorrect client connect\n");
 		exit(1);
 	}
-	
-	i = 0;
 
 	puts("Enter messages:");
-	while(i < 10) 
-	{
-		if(!memset(buf, 0, 1024))
-		{
-			fprintf(stderr, "Incorrect buf memset\n");
-			exit(1);
-		}
-		if(!memset(buf2, 0, 1024))
-		{
-			fprintf(stderr, "Incorrect buf2 memset\n");
-			exit(1);
-		}
-			
+	while(1) 
+	{			
 		fgets(buf, 1024, stdin);
 			
 		if(send(sock, buf, 1024, 0) == -1)
@@ -79,8 +64,7 @@ int main(int argc, char *argv[])
 			fprintf(stderr, "Incorrect client recv\n");
 			exit(1);
 		}
-		printf("%s", buf2);
-		i++;
+		printf("Outgoing - %s", buf2);
 	}
 	shutdown(sock, SHUT_RDWR);
 

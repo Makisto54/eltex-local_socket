@@ -8,8 +8,6 @@
 
 int main(int argc, char *argv[]) 
 {
-	int i;
-	int j;
 	int sock;
 	int new_sock;
 	socklen_t size;
@@ -18,7 +16,7 @@ int main(int argc, char *argv[])
 	struct sockaddr_un server_address;
 
 	size = sizeof(struct sockaddr_un);
-	sock = socket(AF_INET, SOCK_STREAM, 0);
+	sock = socket(AF_LOCAL, SOCK_STREAM, 0);
 	if (sock == -1)
 	{
 		fprintf(stderr, "Incorrect server socket\n");
@@ -36,6 +34,7 @@ int main(int argc, char *argv[])
 	
 	if(bind(sock, (struct sockaddr *)&server_address, sizeof(server_address)) == -1)
 	{
+		perror("what");
 		fprintf(stderr, "Incorrect server bind\n");
 		exit(1);
 	}
@@ -46,22 +45,15 @@ int main(int argc, char *argv[])
 		exit(1);
 	}
 	
-	i = 0;
 	new_sock = accept(sock, NULL, NULL);
-	if(new_sock == -1)
+	if (new_sock == -1)
 	{
 		fprintf(stderr, "Incorrect server accept\n");
 		exit(1);
 	}
 
-	while(i < 10) 
-	{
-		if(!memset(buf, 0, 1024))
-		{
-			fprintf(stderr, "Incorrect server memset\n");
-			exit(1);
-		}
-	
+	while(1) 
+	{	
 		bytes_read = recv(new_sock, buf, 1024, 0);
 	    if(bytes_read == -1)
 		{
@@ -71,11 +63,9 @@ int main(int argc, char *argv[])
 
 	    printf("%s", buf);
 	    	
-	    j = 0;
-		while(j < bytes_read)
+		for(int i = 0; i  < bytes_read; i++)
 		{
-			buf[j] = toupper((unsigned char) buf[j]);
-			j++;
+			buf[i] = toupper((unsigned char) buf[i]);
 		}
 		
 		if(send(new_sock, buf, bytes_read, 0) == -1)
@@ -83,7 +73,6 @@ int main(int argc, char *argv[])
 			fprintf(stderr, "Incorrect server send\n");
 			exit(1);
 		}
-		i++;
 	}
 	shutdown(new_sock, SHUT_RDWR);
     shutdown(sock, SHUT_RDWR);
